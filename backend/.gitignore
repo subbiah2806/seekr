@@ -1,0 +1,27 @@
+# Node
+node_modules
+dist
+
+# Python
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Environment
+.env
+.env.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+seekr.db
+
+# Logs
+*.log
+
+# OS
+.DS_Store

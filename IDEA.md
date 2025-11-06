@@ -5,6 +5,7 @@
 ## Core Concept
 
 A unified platform that can be either:
+
 - **Premium Hosted Service** - Users pay for a hosted solution
 - **Self-Hosted (Free)** - Users clone the repo and run everything locally with their own backend
 
@@ -15,6 +16,7 @@ All applications (web, desktop, mobile, browser extension) connect to a single b
 ### 1. Job Application Intelligence
 
 **Gmail Integration & Tracking**
+
 - User provides Gmail credentials on first login
 - Scrapes emails to identify job applications
 - Automatically categorizes applications into columns:
@@ -32,6 +34,7 @@ All applications (web, desktop, mobile, browser extension) connect to a single b
   - Auto-updated status based on email content
 
 **LinkedIn Auto-Apply**
+
 - Daily LinkedIn monitoring for relevant job postings
 - Cross-references with existing applications from Gmail scraper
 - Auto-applies to jobs not yet applied
@@ -41,6 +44,7 @@ All applications (web, desktop, mobile, browser extension) connect to a single b
 ### 2. Smart Resume Tailoring
 
 **Browser Extension**
+
 - One-click resume customization
 - Analyzes job description text content from current page
 - Generates tailored resume matching job requirements
@@ -48,6 +52,7 @@ All applications (web, desktop, mobile, browser extension) connect to a single b
 - **Future**: Auto-uploads file to job application form
 
 **Workflow**:
+
 1. User browses job posting
 2. Clicks extension button
 3. Extension scrapes page content
@@ -58,17 +63,20 @@ All applications (web, desktop, mobile, browser extension) connect to a single b
 ### 3. Interview Preparation System
 
 **Tailored Resume Tracker**
+
 - Maintains all versions of tailored resumes
 - Identifies skills/technologies claimed in each resume
 - Cross-references with user's actual expertise
 
 **Smart Study Guide**
+
 - Dedicated "Learning" page in web app
 - Shows all tailored resumes
 - User selects which resume to prepare for
 - System analyzes gaps between claimed skills and actual knowledge
 
 **Personalized Learning Paths**
+
 - First-time setup asks user preferences:
   - Preferred programming language for examples
   - Learning style preferences
@@ -78,6 +86,7 @@ All applications (web, desktop, mobile, browser extension) connect to a single b
 - Adapts explanations to user's preferred language/framework
 
 **Interview Reminders**
+
 - Tracks upcoming interviews
 - Sends reminders days before interview
 - Prompts user to study tailored resume content
@@ -86,12 +95,14 @@ All applications (web, desktop, mobile, browser extension) connect to a single b
 ### 4. Interview Support Tools
 
 **Desktop Application (Electron)**
+
 - Background mode - invisible during video calls
 - Receives coding challenges from browser extension
 - Displays answers/hints on secondary screen not shared on Zoom
 - Acts as silent assistant during technical interviews
 
 **Browser Extension Integration**
+
 - Command+Q hotkey during interview
 - Captures coding challenge from page
 - Sends to backend → desktop app
@@ -100,6 +111,7 @@ All applications (web, desktop, mobile, browser extension) connect to a single b
 ### 5. Unified Notification & Automation System
 
 **WebSocket Architecture**
+
 - Single backend serves all platforms
 - Persistent WebSocket connections to:
   - Web application
@@ -109,6 +121,7 @@ All applications (web, desktop, mobile, browser extension) connect to a single b
 - Real-time bidirectional communication
 
 **Extensible Backend**
+
 - Users can write custom scripts
 - Backend executes automation tasks
 - Sends notifications to all connected clients
@@ -120,6 +133,7 @@ All applications (web, desktop, mobile, browser extension) connect to a single b
   - Any user-defined automation
 
 **Cross-Platform Notifications**
+
 - Job application updates
 - Interview reminders
 - Stock alerts
@@ -129,6 +143,7 @@ All applications (web, desktop, mobile, browser extension) connect to a single b
 ### 6. Mobile Application (React Native)
 
 **Features**:
+
 - Receives real-time notifications from backend
 - View job application dashboard
 - Quick resume tailoring
@@ -139,6 +154,7 @@ All applications (web, desktop, mobile, browser extension) connect to a single b
 ## Technical Architecture
 
 ### Monorepo Structure
+
 ```
 seekr/
 ├── packages/
@@ -151,6 +167,7 @@ seekr/
 ```
 
 ### Backend Services
+
 - Gmail API integration
 - LinkedIn scraping service
 - Resume generation AI service
@@ -161,6 +178,7 @@ seekr/
 - Custom script execution engine
 
 ### Communication Flow
+
 ```
 All Clients (Web/Desktop/Mobile/Extension)
           ↓↑ WebSocket
@@ -172,12 +190,14 @@ All Clients (Web/Desktop/Mobile/Extension)
 ## Deployment Options
 
 ### Option 1: Premium Hosted Service
+
 - Seekr hosts backend infrastructure
 - Users subscribe and use immediately
 - No technical setup required
 - Managed updates and maintenance
 
 ### Option 2: Self-Hosted (Free)
+
 - User clones GitHub repository
 - Runs backend on local machine
 - All applications point to local backend
@@ -188,6 +208,7 @@ All Clients (Web/Desktop/Mobile/Extension)
 ## Future Expansion Ideas
 
 Beyond career management, Seekr can evolve into a complete personal assistant:
+
 - Financial tracking and alerts
 - Health and fitness reminders
 - Personal task management
@@ -197,43 +218,50 @@ Beyond career management, Seekr can evolve into a complete personal assistant:
 
 ## Tagline
 
-*Seekr: Because your career deserves a personal assistant.*
+_Seekr: Because your career deserves a personal assistant._
 
 ---
 
 ## Development Phases
 
 ### Phase 1: MVP (Core Job Tracking)
+
 - Gmail integration and scraping
 - Basic job application dashboard
 - Simple status tracking
 
 ### Phase 2: Resume Tailoring
+
 - Browser extension development
 - AI resume generation
 - Download functionality
 
 ### Phase 3: Auto-Apply
+
 - LinkedIn integration
 - Auto-apply logic
 - Duplicate detection
 
 ### Phase 4: Interview Prep
+
 - Tailored resume analysis
 - Learning path generation
 - Study reminders
 
 ### Phase 5: Interview Support
+
 - Desktop background app
 - Real-time coding challenge assistance
 - Multi-display support
 
 ### Phase 6: Mobile & Full Platform
+
 - React Native mobile app
 - Complete WebSocket integration
 - Cross-platform notifications
 
 ### Phase 7: Extensibility
+
 - Custom script engine
 - User-defined automations
 - Plugin system

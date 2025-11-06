@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Seekr - AI Resume Tailoring",
+  "version": "1.0.0",
+  "description": "AI-powered resume tailoring for job applications",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": ["http://localhost:8000/*"],
+  "action": {
+    "default_popup": "src/popup.html",
+    "default_title": "Seekr"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/chrome/content.ts"],
+      "run_at": "document_idle"
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}

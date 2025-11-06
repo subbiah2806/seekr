@@ -1,0 +1,36 @@
+{
+  "name": "seekr",
+  "version": "1.0.0",
+  "description": "Your Personal Career Autopilot - Multi-platform career management system",
+  "private": true,
+  "workspaces": [
+    "web",
+    "desktop",
+    "mobile",
+    "extension",
+    "backend"
+  ],
+  "scripts": {
+    "start:web": "npx kill-port 4100 && cd web && npm run dev -- --port 4100",
+    "start:desktop": "cd desktop && npm run electron:dev",
+    "start:mobile": "cd mobile && npm run dev",
+    "start:extension": "cd extension && npm run dev",
+    "start:backend": "cd backend && ./start-postgres.sh",
+    "build:web": "cd web && npm run build",
+    "build:desktop": "cd desktop && npm run build",
+    "build:mobile": "cd mobile && npm run build",
+    "build:extension": "cd extension && npm run build",
+    "build:all": "npm run build:web && npm run build:desktop && npm run build:mobile && npm run build:extension",
+    "install:all": "npm install && cd web && npm install && cd ../desktop && npm install && cd ../mobile && npm install && cd ../extension && npm install",
+    "type-check:all": "cd web && npm run type-check && cd ../desktop && npm run type-check && cd ../mobile && npm run type-check && cd ../extension && npm run type-check"
+  },
+  "keywords": [
+    "career",
+    "job-search",
+    "automation",
+    "interview-prep",
+    "resume"
+  ],
+  "author": "Subbiah",
+  "license": "MIT"
+}
