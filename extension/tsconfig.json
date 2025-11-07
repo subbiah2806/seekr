@@ -15,12 +15,11 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true,
     "paths": {
       "@/*": ["./src/*"],
       "@subbiah/reusable/*": ["./node_modules/@subbiah/reusable/src/*"]
     },
-    "types": ["vite/client", "chrome", "node"]
+    "types": ["vite/client", "chrome"]
   },
   "include": ["src"]
 }

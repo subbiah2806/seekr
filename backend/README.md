@@ -9,7 +9,7 @@ Simple Resume Management API built with Python, FastAPI, and PostgreSQL.
 - **Web Frontend**: `4100`
 - **Extension**: `4101`
 
-*Port ranges: 4100-4199 for frontend, 4200-4299 for backend/database*
+_Port ranges: 4100-4199 for frontend, 4200-4299 for backend/database_
 
 ## Quick Start (One Command!)
 
@@ -22,6 +22,7 @@ npm run dev
 ```
 
 That's it! The script will:
+
 - ✅ Check and install dependencies if needed
 - ✅ Use SQLite (no database server needed!)
 - ✅ Create tables automatically
@@ -36,6 +37,7 @@ npm run start:postgres
 ```
 
 This will:
+
 - ✅ Install PostgreSQL (if not installed)
 - ✅ Start PostgreSQL service
 - ✅ Create database automatically
@@ -46,6 +48,7 @@ This will:
 If you prefer manual control:
 
 1. Install Python dependencies:
+
 ```bash
 pip3 install -r requirements.txt
 ```
@@ -54,6 +57,7 @@ pip3 install -r requirements.txt
    For PostgreSQL, edit `.env` and uncomment the PostgreSQL line.
 
 3. Run the server:
+
 ```bash
 python3 main.py
 ```
@@ -63,11 +67,13 @@ The server will start at `http://localhost:4200`
 ## Database Options
 
 ### SQLite (Default - Recommended for Development)
+
 - **No server needed** - Just works!
 - **File-based** - Database stored in `seekr.db`
 - **Perfect for local development and testing**
 
 ### PostgreSQL (Optional - For Production)
+
 - **Scalable** - Better for production
 - **Server-based** - Runs on port 4201
 - **Use `npm run start:postgres`** to auto-setup
@@ -92,6 +98,7 @@ Response: { "status": "ok", "message": "Seekr API is running" }
 ### Resume Management
 
 #### Create a Resume
+
 ```
 POST /api/resumes
 Body: {
@@ -103,6 +110,7 @@ Response: 201 Created
 ```
 
 #### Get All Resumes (with pagination and filtering)
+
 ```
 GET /api/resumes?page=1&page_size=10&company_name=fidelity
 
@@ -123,12 +131,14 @@ Note: Total count is not returned to avoid expensive count queries.
 ```
 
 #### Get Single Resume
+
 ```
 GET /api/resumes/{id}
 Response: { "id": 1, "company_name": "Google", ... }
 ```
 
 #### Update Resume
+
 ```
 PUT /api/resumes/{id}
 Body: {
@@ -138,6 +148,7 @@ Response: Updated resume object
 ```
 
 #### Delete Resume
+
 ```
 DELETE /api/resumes/{id}
 Response: 204 No Content
@@ -168,5 +179,6 @@ Response: 204 No Content
 ## Interactive API Documentation
 
 Once the server is running, visit:
+
 - **Swagger UI**: http://localhost:4200/docs
 - **ReDoc**: http://localhost:4200/redoc
