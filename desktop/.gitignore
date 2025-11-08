@@ -9,6 +9,7 @@ dist-electron
 dist-ssr
 release
 *.local
+package-lock.json
 
 # Editor
 .vscode/*
