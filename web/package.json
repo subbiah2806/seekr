@@ -4,18 +4,25 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port 5173",
+    "start": "npx kill-port 5173 && vite --port 5173",
     "build": "vite build",
     "preview": "vite preview",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@subbiah/reusable": "github:subbiah2806/component",
+    "@tanstack/react-query": "5.90.7",
+    "lucide-react": "0.468.0",
+    "mammoth": "1.8.0",
+    "pdfjs-dist": "4.9.155",
     "react": "19.2.0",
     "react-dom": "19.2.0",
+    "react-dropzone": "14.2.3",
+    "react-resizable-panels": "3.0.6",
     "react-router-dom": "7.9.4"
   },
   "devDependencies": {
+    "@tanstack/react-query-devtools": "5.90.2",
     "@types/node": "24.9.0",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",

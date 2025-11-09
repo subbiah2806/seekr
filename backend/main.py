@@ -8,7 +8,7 @@ import os
 from contextlib import asynccontextmanager
 
 from models.schemas import HealthCheckResponse
-from routes import resumes, user_settings
+from routes import resumes, user_settings, chat
 from db.database import create_tables
 
 # Load environment variables from parent directory (shared .env)
@@ -63,6 +63,7 @@ async def health_check():
 # Include routers
 app.include_router(resumes.router)
 app.include_router(user_settings.router)
+app.include_router(chat.router)
 
 
 if __name__ == "__main__":

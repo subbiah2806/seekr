@@ -1,14 +1,16 @@
-import { InitializeReusableChunks } from '@subbiah/reusable/initializeReusableChunks';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { InitializeReusableChunks } from '@subbiah/reusable/InitializeReusableChunks';
+import { ResumeBuilder } from './pages/ResumeBuilder';
 
 function App() {
   return (
-    <InitializeReusableChunks>
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-center">
-          <h1 className="mb-4 text-6xl font-bold text-foreground">Hello World</h1>
-          <p className="text-xl text-muted-foreground">Seekr Web Application</p>
-        </div>
-      </div>
+    <InitializeReusableChunks applyToBody>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Navigate to="/resume-builder" replace />} />
+          <Route path="/resume-builder" element={<ResumeBuilder />} />
+        </Routes>
+      </BrowserRouter>
     </InitializeReusableChunks>
   );
 }
