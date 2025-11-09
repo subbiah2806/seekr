@@ -25,6 +25,7 @@ interface ChatInterfaceProps {
   onMessagesChange: (messages: ChatMessageType[]) => void;  // Update parent state
   onResumeUpdate: (resume: ResumeData) => void;
   onAiResponseReceived?: () => void;  // Callback when AI response is received
+  headerLeftElement?: React.ReactNode;  // Optional element to show on left side of header (mobile menu button)
   initialFileContent?: string;
   initialResume?: ResumeData | null;
   className?: string;
@@ -41,6 +42,7 @@ export function ChatInterface({
   onMessagesChange,
   onResumeUpdate,
   onAiResponseReceived,
+  headerLeftElement,
   initialFileContent,
   initialResume,
   className = '',
@@ -311,10 +313,15 @@ export function ChatInterface({
       )}
       {/* Header */}
       <div className="flex flex-row items-center justify-between border-b border-border px-6 py-4 min-h-[65px]">
-        <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground">
-          <MessageSquare className="h-5 w-5 text-primary" aria-hidden="true" />
-          {DEFAULT_TITLE}
-        </h2>
+        <div className="flex items-center gap-2">
+          {headerLeftElement && (
+            <div className="lg:hidden">{headerLeftElement}</div>
+          )}
+          <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground">
+            <MessageSquare className="h-5 w-5 text-primary" aria-hidden="true" />
+            {DEFAULT_TITLE}
+          </h2>
+        </div>
 
         {/* Clear Chat Button */}
         {hasMessages && (

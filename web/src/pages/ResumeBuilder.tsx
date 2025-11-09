@@ -11,11 +11,18 @@
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, Menu } from 'lucide-react';
 import { ChatInterface } from '../components/ChatBot/ChatInterface';
 import { ResumePreview } from '../components/ChatBot/ResumePreview';
 import { ResumeList } from '../components/ResumeBuilder/ResumeList';
 import { ResumeNameModal } from '../components/ResumeBuilder/ResumeNameModal';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@subbiah/reusable/components/ui/sheet';
+import { Button } from '@subbiah/reusable/components/ui/button';
 import {
   useResumes,
   useResume,
@@ -92,6 +99,7 @@ export function ResumeBuilder() {
   const [showNameModal, setShowNameModal] = useState(false);
   const [renameTarget, setRenameTarget] = useState<Resume | undefined>();
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [showMobileSheet, setShowMobileSheet] = useState(false);
 
   // API hooks
   const { data: resumes, isLoading: resumesLoading } = useResumes();
@@ -427,6 +435,17 @@ export function ResumeBuilder() {
             onMessagesChange={handleMessagesChange}
             onResumeUpdate={handleResumeUpdate}
             onAiResponseReceived={handleAiResponseReceived}
+            headerLeftElement={
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowMobileSheet(true)}
+                className="h-8 w-8 p-0"
+                aria-label="Open resume list"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            }
             initialResume={pageData.resume}
             className="h-full border-none"
             isLoadingResume={selectedResumeLoading}
@@ -531,6 +550,40 @@ export function ResumeBuilder() {
         initialName={renameTarget?.name}
         title={renameTarget ? 'Rename Resume' : 'Save Resume'}
       />
+
+      {/* Mobile Resume List Sheet */}
+      <Sheet open={showMobileSheet} onOpenChange={setShowMobileSheet}>
+        <SheetContent side="left" className="w-80 p-0 flex flex-col">
+          <SheetHeader className="sr-only">
+            <SheetTitle>My Resumes</SheetTitle>
+          </SheetHeader>
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <ResumeList
+              onSelectResume={(resume) => {
+                handleSelectResume(resume);
+                setShowMobileSheet(false);
+              }}
+              selectedResumeId={selectedResume}
+              onRename={(resume) => {
+                handleOpenRenameModal(resume);
+                setShowMobileSheet(false);
+              }}
+              onDelete={(resume) => {
+                handleDeleteResume(resume);
+                setShowMobileSheet(false);
+              }}
+              onTailorResume={(resume) => {
+                handleTailorResume(resume);
+                setShowMobileSheet(false);
+              }}
+              onNewResume={() => {
+                handleNewResume();
+                setShowMobileSheet(false);
+              }}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

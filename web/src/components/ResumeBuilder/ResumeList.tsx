@@ -239,7 +239,7 @@ export function ResumeList({ onSelectResume, selectedResumeId, onRename, onDelet
                       e.stopPropagation();
                       handleSetDefault(resume.id);
                     }}
-                    disabled={setDefaultMutation.isPending}
+                    disabled={isDefault || setDefaultMutation.isPending}
                   >
                     <Star className="mr-2 h-4 w-4" />
                     Set as Default
