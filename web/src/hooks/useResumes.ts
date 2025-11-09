@@ -27,10 +27,16 @@ interface UpdateResumeRequest {
 }
 
 /**
- * Fetch all resumes
+ * Fetch all resumes with optional name filter
  */
-async function fetchResumes(): Promise<Resume[]> {
-  const response = await fetch(`${API_BASE_URL}/api/resumes?page_size=100`);
+async function fetchResumes(nameFilter?: string): Promise<Resume[]> {
+  const params = new URLSearchParams({ page_size: '100' });
+
+  if (nameFilter) {
+    params.append('name', nameFilter);
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/resumes?${params.toString()}`);
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({ detail: 'Failed to fetch resumes' }));
@@ -120,12 +126,12 @@ async function setDefaultResume(id: number): Promise<void> {
 }
 
 /**
- * Hook for fetching all resumes
+ * Hook for fetching all resumes with optional name filter
  */
-export function useResumes() {
+export function useResumes(nameFilter?: string) {
   return useQuery({
-    queryKey: ['resumes'],
-    queryFn: fetchResumes,
+    queryKey: ['resumes', nameFilter],
+    queryFn: () => fetchResumes(nameFilter),
   });
 }
 

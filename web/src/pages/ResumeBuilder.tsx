@@ -11,8 +11,7 @@
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
-import { GripVertical, Plus } from 'lucide-react';
-import { Button } from '@subbiah/reusable/components/ui/button';
+import { GripVertical } from 'lucide-react';
 import { ChatInterface } from '../components/ChatBot/ChatInterface';
 import { ResumePreview } from '../components/ChatBot/ResumePreview';
 import { ResumeList } from '../components/ResumeBuilder/ResumeList';
@@ -367,24 +366,6 @@ export function ResumeBuilder() {
     }
   }, []);
 
-  /**
-   * Load panel layout from localStorage
-   */
-  const getDefaultLayout = useCallback((): number[] | undefined => {
-    try {
-      const saved = localStorage.getItem(PANEL_STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length === 3) {
-          return parsed;
-        }
-      }
-    } catch (error) {
-      console.error('Failed to load panel layout:', error);
-    }
-    return undefined;
-  }, []);
-
   // Show loader until initial data is loaded
   if (isInitialLoading) {
     return (
@@ -424,62 +405,35 @@ export function ResumeBuilder() {
         </div>
       </div>
 
-      {/* Desktop: Three-Column Resizable Layout (>= lg breakpoint) */}
-      <div className="hidden lg:block h-full">
+      {/* Desktop: Three-Column Layout (>= lg breakpoint) */}
+      <div className="hidden lg:flex h-full">
+        {/* Left Panel: Resume List - Fixed Width */}
+        <div className="w-64 h-full overflow-hidden flex flex-col bg-card border-r border-border">
+          <ResumeList
+            onSelectResume={handleSelectResume}
+            selectedResumeId={selectedResume}
+            onRename={handleOpenRenameModal}
+            onDelete={handleDeleteResume}
+            onTailorResume={handleTailorResume}
+            onNewResume={handleNewResume}
+          />
+        </div>
+
+        {/* Right Side: Chat and Preview with Resizable Panels */}
         <PanelGroup
           direction="horizontal"
           onLayout={handlePanelLayout}
           autoSaveId="resume-builder-panels"
-          className="h-full"
+          className="flex-1 h-full"
         >
-          {/* Left Panel: Resume List */}
+
+          {/* Chat Panel */}
           <Panel
-            defaultSize={getDefaultLayout()?.[0] || 20}
-            minSize={15}
-            maxSize={30}
-            id="list-panel"
-            order={1}
-            className="h-full"
-          >
-            <div className="h-full overflow-hidden flex flex-col bg-card">
-              {/* Header with New Resume Button */}
-              <div className="border-b border-border px-4 py-3">
-                <h2 className="text-lg font-semibold text-foreground mb-3">My Resumes</h2>
-                <Button onClick={handleNewResume} className="w-full" size="sm">
-                  <Plus className="mr-2 h-4 w-4" />
-                  New Resume
-                </Button>
-              </div>
-
-              {/* Resume List */}
-              <div className="flex-1 overflow-y-auto px-4 py-4">
-                <ResumeList
-                  onSelectResume={handleSelectResume}
-                  selectedResumeId={selectedResume}
-                  onRename={handleOpenRenameModal}
-                  onDelete={handleDeleteResume}
-                  onTailorResume={handleTailorResume}
-                />
-              </div>
-            </div>
-          </Panel>
-
-          {/* First Resize Handle */}
-          <PanelResizeHandle className="group relative w-1 bg-border transition-colors hover:bg-primary focus-visible:bg-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-            <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none">
-              <div className="flex h-10 w-4 items-center justify-center rounded-sm bg-border transition-colors group-hover:bg-primary group-focus-visible:bg-primary">
-                <GripVertical className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-primary-foreground group-focus-visible:text-primary-foreground" />
-              </div>
-            </div>
-          </PanelResizeHandle>
-
-          {/* Center Panel: Chat Interface */}
-          <Panel
-            defaultSize={getDefaultLayout()?.[1] || 40}
+            defaultSize={50}
             minSize={30}
-            maxSize={60}
+            maxSize={70}
             id="chat-panel"
-            order={2}
+            order={1}
             className="h-full"
           >
             <div className="h-full overflow-hidden">
@@ -495,7 +449,7 @@ export function ResumeBuilder() {
             </div>
           </Panel>
 
-          {/* Second Resize Handle */}
+          {/* Resize Handle */}
           <PanelResizeHandle className="group relative w-1 bg-border transition-colors hover:bg-primary focus-visible:bg-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
             <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none">
               <div className="flex h-10 w-4 items-center justify-center rounded-sm bg-border transition-colors group-hover:bg-primary group-focus-visible:bg-primary">
@@ -504,13 +458,13 @@ export function ResumeBuilder() {
             </div>
           </PanelResizeHandle>
 
-          {/* Right Panel: Resume Preview */}
+          {/* Preview Panel */}
           <Panel
-            defaultSize={getDefaultLayout()?.[2] || 40}
+            defaultSize={50}
             minSize={30}
-            maxSize={60}
+            maxSize={70}
             id="preview-panel"
-            order={3}
+            order={2}
             className="h-full"
           >
             <div className="h-full overflow-hidden">
