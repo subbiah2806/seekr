@@ -21,6 +21,8 @@ interface AttachedFile {
 }
 
 interface ChatInterfaceProps {
+  messages: ChatMessageType[];  // Controlled messages from parent
+  onMessagesChange: (messages: ChatMessageType[]) => void;  // Update parent state
   onResumeUpdate: (resume: ResumeData) => void;
   initialFileContent?: string;
   initialResume?: ResumeData | null;
@@ -29,20 +31,19 @@ interface ChatInterfaceProps {
 }
 
 const DEFAULT_TITLE = 'Resume Assistant';
-const DEFAULT_WELCOME_MESSAGE =
-  "Hi! I'm your AI resume assistant. Upload your resume or job description, or just start chatting to create or optimize your resume.";
 
 /**
  * ChatInterface - Main chat container component for resume chatbot
  */
 export function ChatInterface({
+  messages,
+  onMessagesChange,
   onResumeUpdate,
   initialFileContent,
   initialResume,
   className = '',
   isLoadingResume = false,
 }: ChatInterfaceProps) {
-  const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
   const [currentResume, setCurrentResume] = useState<ResumeData | null>(initialResume || null);
@@ -51,13 +52,13 @@ export function ChatInterface({
   const aiResponseReceived = useRef(false);
 
   const { sendMessage, isLoading, error: apiError, reset } = useChat({
-    onResumeUpdate: (resume) => {
+    onResumeUpdate: useCallback((resume: ResumeData) => {
       setCurrentResume(resume); // Update local resume state
       onResumeUpdate(resume);
       // Reset AI response flag before callbacks
       aiResponseReceived.current = false;
-    },
-    onAiResponse: (response, updatedResume) => {
+    }, [onResumeUpdate]),
+    onAiResponse: useCallback((response: string, updatedResume: ResumeData) => {
       console.log('[ChatInterface] Received AI response:', {
         response: response.substring(0, 50) + '...',
         hasResume: !!updatedResume,
@@ -68,8 +69,8 @@ export function ChatInterface({
 
       // Add AI response (suggestions/questions) to messages when present
       // Use the updated resume from the callback, not the stale state
-      setMessages((prev) => [
-        ...prev,
+      onMessagesChange([
+        ...messages,
         {
           role: 'assistant',
           content: response,
@@ -78,13 +79,13 @@ export function ChatInterface({
       ]);
       setError(null);
       aiResponseReceived.current = true;
-    },
-    onSuccess: (message, updatedResume) => {
+    }, [messages, onMessagesChange]),
+    onSuccess: useCallback((message: string, updatedResume: ResumeData) => {
       // Fallback: Add system message if no AI response was provided
       // This maintains backward compatibility with the deprecated 'message' field
       if (!aiResponseReceived.current && message) {
-        setMessages((prev) => [
-          ...prev,
+        onMessagesChange([
+          ...messages,
           {
             role: 'assistant',
             content: message,
@@ -93,11 +94,11 @@ export function ChatInterface({
         ]);
       }
       setError(null);
-    },
-    onError: (err) => {
+    }, [messages, onMessagesChange]),
+    onError: useCallback((err: Error) => {
       setError(err.message || 'Failed to send message. Please try again.');
       aiResponseReceived.current = false;
-    },
+    }, []),
   });
 
   /**
@@ -135,10 +136,10 @@ export function ChatInterface({
         content: 'I uploaded a file. Please analyze it and help me with my resume.',
         resume: currentResume, // Include resume state in message
       };
-      setMessages([initialMessage]);
+      onMessagesChange([initialMessage]);
       sendMessage([initialMessage], initialFileContent);
     }
-  }, [initialFileContent, currentResume, sendMessage]);
+  }, [initialFileContent, currentResume, sendMessage, onMessagesChange]);
 
   /**
    * Handle file drop using react-dropzone
@@ -228,18 +229,18 @@ export function ChatInterface({
         experienceCount: userMessage.resume?.experience?.length,
       });
 
-      setMessages((prev) => [...prev, userMessage]);
+      const updatedMessages = [...messages, userMessage];
+      onMessagesChange(updatedMessages);
 
       // Send all messages to API with file content if attached
-      const allMessages = [...messages, userMessage];
       const contentToSend = hasFileAttached;
 
-      sendMessage(allMessages, contentToSend);
+      sendMessage(updatedMessages, contentToSend);
 
       // Clear attached file after sending
       setAttachedFile(null);
     },
-    [messages, isLoading, attachedFile, currentResume, sendMessage]
+    [messages, isLoading, attachedFile, currentResume, sendMessage, onMessagesChange]
   );
 
   /**
@@ -254,13 +255,13 @@ export function ChatInterface({
    */
   const handleClearChat = useCallback((): void => {
     if (window.confirm('Are you sure you want to clear all messages?')) {
-      setMessages([]);
+      onMessagesChange([]);
       setError(null);
       setAttachedFile(null);
       reset();
       hasProcessedInitialFile.current = false;
     }
-  }, [reset]);
+  }, [reset, onMessagesChange]);
 
   /**
    * Clear error message
@@ -341,7 +342,7 @@ export function ChatInterface({
           {!hasMessages && (
             <div className="flex h-full flex-col items-center justify-center gap-3 py-6 px-4">
               <div className="space-y-2 max-w-3xl w-full">
-                <h3 className="flex items-center justify-center gap-2 text-base font-semibold text-foreground">
+                <h3 className="flex items-center justify-center gap-2 text-lg font-semibold text-foreground">
                   <MessageSquare className="h-5 w-5 text-primary" aria-hidden="true" />
                   {currentResume ? 'Polish Your Resume' : 'Build Your Resume'}
                 </h3>
@@ -359,42 +360,42 @@ export function ChatInterface({
                 ) : (
                   /* No resume - show creation guide */
                   <>
-                    <p className="text-xs text-muted-foreground text-center">
+                    <p className="text-sm text-muted-foreground text-center">
                       Provide the following information to create your professional resume or you can upload a resume file instead we can parse these things from your existing resume
                     </p>
 
                     {/* Information Required List - Compact Layout */}
-                    <div className="space-y-2 text-left text-xs">
+                    <div className="space-y-2 text-left text-sm">
                       <div>
-                        <h4 className="font-semibold text-foreground mb-0.5 text-xs">Personal Information</h4>
+                        <h4 className="font-semibold text-foreground mb-0.5 text-sm">Personal Information</h4>
                         <p className="text-muted-foreground">
                           First & last name • Email & mobile • Location • LinkedIn • GitHub • Visa status • Remote preference
                         </p>
                       </div>
 
                       <div>
-                        <h4 className="font-semibold text-foreground mb-0.5 text-xs">Professional Summary</h4>
+                        <h4 className="font-semibold text-foreground mb-0.5 text-sm">Professional Summary</h4>
                         <p className="text-muted-foreground">
                           Brief professional summary highlighting your expertise
                         </p>
                       </div>
 
                       <div>
-                        <h4 className="font-semibold text-foreground mb-0.5 text-xs">Skills</h4>
+                        <h4 className="font-semibold text-foreground mb-0.5 text-sm">Skills</h4>
                         <p className="text-muted-foreground">
                           List of skills organized by category (Frontend, Backend, DevOps, etc.)
                         </p>
                       </div>
 
                       <div>
-                        <h4 className="font-semibold text-foreground mb-0.5 text-xs">Professional Experience</h4>
+                        <h4 className="font-semibold text-foreground mb-0.5 text-sm">Professional Experience</h4>
                         <p className="text-muted-foreground">
                           Company name & location • Position/role • Employment dates • Achievements & responsibilities • Project descriptions
                         </p>
                       </div>
 
                       <div>
-                        <h4 className="font-semibold text-foreground mb-0.5 text-xs">Education</h4>
+                        <h4 className="font-semibold text-foreground mb-0.5 text-sm">Education</h4>
                         <p className="text-muted-foreground">
                           College/University name & location • Major/Degree • Dates attended
                         </p>

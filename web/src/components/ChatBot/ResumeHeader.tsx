@@ -6,33 +6,41 @@ interface ResumeHeaderProps {
 }
 
 export function ResumeHeader({ resume }: ResumeHeaderProps) {
-  const fullName = `${resume.firstName} ${resume.lastName}`;
+  const fullName = [resume.firstName, resume.lastName].filter(Boolean).join(' ');
 
   return (
     <header className="space-y-4">
       {/* Name */}
-      <h1 className="text-3xl font-bold text-foreground md:text-4xl">
-        {fullName}
-      </h1>
+      {fullName && (
+        <h1 className="text-3xl font-bold text-foreground md:text-4xl">
+          {fullName}
+        </h1>
+      )}
 
       {/* Contact Info */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-        <a
-          href={`mailto:${resume.email}`}
-          className="flex items-center gap-1.5 transition-colors hover:text-primary"
-        >
-          <Mail className="h-4 w-4" />
-          <span>{resume.email}</span>
-        </a>
+      {(resume.email || resume.phone) && (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+          {resume.email && (
+            <a
+              href={`mailto:${resume.email}`}
+              className="flex items-center gap-1.5 transition-colors hover:text-primary"
+            >
+              <Mail className="h-4 w-4" />
+              <span>{resume.email}</span>
+            </a>
+          )}
 
-        <a
-          href={`tel:${resume.phone}`}
-          className="flex items-center gap-1.5 transition-colors hover:text-primary"
-        >
-          <Phone className="h-4 w-4" />
-          <span>{resume.phone}</span>
-        </a>
-      </div>
+          {resume.phone && (
+            <a
+              href={`tel:${resume.phone}`}
+              className="flex items-center gap-1.5 transition-colors hover:text-primary"
+            >
+              <Phone className="h-4 w-4" />
+              <span>{resume.phone}</span>
+            </a>
+          )}
+        </div>
+      )}
 
       {/* Links */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">

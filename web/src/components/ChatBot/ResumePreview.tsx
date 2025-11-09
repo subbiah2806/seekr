@@ -30,6 +30,9 @@ interface ResumePreviewProps {
   onViewModeChange?: (mode: 'formatted' | 'json') => void;
   isLoading?: boolean;
   savedResumeJson?: string;
+  onSaveAs?: () => void;  // Callback to trigger "Save As" modal
+  currentResumeId?: number;  // Current resume ID (undefined if new)
+  hasUnsavedChanges?: boolean;  // Whether there are unsaved changes
 }
 
 function ResumePreviewComponent({
@@ -39,6 +42,9 @@ function ResumePreviewComponent({
   onViewModeChange,
   isLoading = false,
   savedResumeJson,
+  onSaveAs,
+  currentResumeId,
+  hasUnsavedChanges = false,
 }: ResumePreviewProps) {
   const [internalViewMode, setInternalViewMode] = useState<'formatted' | 'json'>('formatted');
   const [copied, setCopied] = useState(false);
@@ -116,7 +122,8 @@ function ResumePreviewComponent({
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${resume.firstName}_${resume.lastName}_Resume.docx`;
+      const fileName = [resume.firstName, resume.lastName].filter(Boolean).join('_') || 'Resume';
+      link.download = `${fileName}_Resume.docx`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -135,7 +142,8 @@ function ResumePreviewComponent({
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${resume.firstName}_${resume.lastName}_Resume.pdf`;
+      const fileName = [resume.firstName, resume.lastName].filter(Boolean).join('_') || 'Resume';
+      link.download = `${fileName}_Resume.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -157,26 +165,49 @@ function ResumePreviewComponent({
 
         <div className="flex items-center gap-2">
           <TooltipProvider>
-            <Button
-              variant="default"
-              size="sm"
-              onClick={handleSaveResume}
-              disabled={!resume || saveMutation.isPending || isResumeUnchanged}
-              className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
-              aria-label="Save resume to settings"
-            >
-              {saved ? (
-                <>
-                  <Check className="h-4 w-4" />
-                  <span>Saved!</span>
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4" />
-                  <span>{saveMutation.isPending ? 'Saving...' : 'Save'}</span>
-                </>
-              )}
-            </Button>
+            {onSaveAs && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={onSaveAs}
+                    disabled={!resume}
+                    className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+                    aria-label={currentResumeId ? "Save resume" : "Save as new resume"}
+                  >
+                    <Save className="h-4 w-4" />
+                    <span>{currentResumeId ? 'Save' : 'Save As'}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{currentResumeId ? 'Save resume' : 'Save as new resume'}{hasUnsavedChanges && ' (auto-saved)'}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+
+            {!onSaveAs && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleSaveResume}
+                disabled={!resume || saveMutation.isPending || isResumeUnchanged}
+                className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+                aria-label="Save resume to settings"
+              >
+                {saved ? (
+                  <>
+                    <Check className="h-4 w-4" />
+                    <span>Saved!</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    <span>{saveMutation.isPending ? 'Saving...' : 'Save'}</span>
+                  </>
+                )}
+              </Button>
+            )}
 
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
@@ -208,7 +239,7 @@ function ResumePreviewComponent({
                   variant="outline"
                   size="sm"
                   onClick={handleDeleteResume}
-                  disabled={deleteMutation.isPending || !savedResumeJson}
+                  disabled={true}
                   className="gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
                   aria-label="Delete resume"
                 >

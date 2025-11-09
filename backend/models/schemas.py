@@ -8,23 +8,20 @@ from datetime import datetime
 
 class ResumeCreate(BaseModel):
     """Request model for creating a resume"""
-    company_name: str = Field(..., min_length=1, description="Company name")
-    position_name: str = Field(..., min_length=1, description="Job position/title")
+    name: str = Field(..., min_length=1, max_length=255, description="Resume name")
     resume_json: Dict[str, Any] = Field(..., description="Resume data in JSON format")
 
 
 class ResumeUpdate(BaseModel):
     """Request model for updating a resume"""
-    company_name: Optional[str] = Field(None, min_length=1, description="Company name")
-    position_name: Optional[str] = Field(None, min_length=1, description="Job position/title")
+    name: Optional[str] = Field(None, min_length=1, max_length=255, description="Resume name")
     resume_json: Optional[Dict[str, Any]] = Field(None, description="Resume data in JSON format")
 
 
 class ResumeResponse(BaseModel):
     """Response model for a resume"""
     id: int
-    company_name: str
-    position_name: str
+    name: str
     resume_json: Dict[str, Any]
     ttl: datetime
     created_at: datetime

@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from typing import Optional
 
 from models.schemas import ResumeCreate, ResumeUpdate, ResumeResponse, ResumesListResponse
-from db.models import Resume
+from db.models import Resume, UserSettings
 from db.database import get_db_dependency
 
 router = APIRouter(prefix="/api/resumes", tags=["resumes"])
@@ -22,19 +22,18 @@ async def create_resume(
     Create a new resume
 
     Args:
-        resume: Resume data (company_name + position_name must be unique)
+        resume: Resume data (name must be unique)
         db: Database session
 
     Returns:
         Created resume with id and timestamps
 
     Raises:
-        HTTPException 400: If company_name + position_name combination already exists
+        HTTPException 400: If resume name already exists
     """
     try:
         db_resume = Resume(
-            company_name=resume.company_name,
-            position_name=resume.position_name,
+            name=resume.name,
             resume_json=resume.resume_json
         )
         db.add(db_resume)
@@ -45,7 +44,7 @@ async def create_resume(
         db.rollback()
         raise HTTPException(
             status_code=400,
-            detail=f"Resume for company '{resume.company_name}' and position '{resume.position_name}' already exists"
+            detail=f"Resume with name '{resume.name}' already exists"
         )
     except Exception as e:
         db.rollback()
@@ -56,7 +55,7 @@ async def create_resume(
 async def get_resumes(
     page: int = Query(1, ge=1, description="Page number (starts at 1)"),
     page_size: int = Query(10, ge=1, le=100, description="Items per page (max 100)"),
-    company_name: Optional[str] = Query(None, description="Filter by company name (keyword search, case-insensitive)"),
+    name: Optional[str] = Query(None, description="Filter by resume name (keyword search, case-insensitive)"),
     db: Session = Depends(get_db_dependency)
 ):
     """
@@ -65,7 +64,7 @@ async def get_resumes(
     Args:
         page: Page number (default 1)
         page_size: Items per page (default 10, max 100)
-        company_name: Optional keyword search for company name (case-insensitive partial match)
+        name: Optional keyword search for resume name (case-insensitive partial match)
         db: Database session
 
     Returns:
@@ -75,9 +74,9 @@ async def get_resumes(
         # Build query with filters
         query = db.query(Resume)
 
-        # Apply company filter if provided (case-insensitive keyword search)
-        if company_name:
-            query = query.filter(Resume.company_name.ilike(f"%{company_name}%"))
+        # Apply name filter if provided (case-insensitive keyword search)
+        if name:
+            query = query.filter(Resume.name.ilike(f"%{name}%"))
 
         # Apply pagination directly to query
         offset = (page - 1) * page_size
@@ -135,7 +134,7 @@ async def update_resume(
 
     Raises:
         HTTPException 404: If resume not found
-        HTTPException 400: If company_name + position_name conflicts with existing resume
+        HTTPException 400: If resume name conflicts with existing resume
     """
     try:
         # Find resume
@@ -143,10 +142,8 @@ async def update_resume(
         if not db_resume:
             raise HTTPException(status_code=404, detail=f"Resume with id {resume_id} not found")
 
-        if resume_update.company_name is not None:
-            db_resume.company_name = resume_update.company_name
-        if resume_update.position_name is not None:
-            db_resume.position_name = resume_update.position_name
+        if resume_update.name is not None:
+            db_resume.name = resume_update.name
         if resume_update.resume_json is not None:
             db_resume.resume_json = resume_update.resume_json
 
@@ -157,7 +154,7 @@ async def update_resume(
         db.rollback()
         raise HTTPException(
             status_code=400,
-            detail=f"Resume for company '{db_resume.company_name}' and position '{db_resume.position_name}' already exists"
+            detail=f"Resume with name '{db_resume.name}' already exists"
         )
     except HTTPException:
         raise
@@ -191,6 +188,47 @@ async def delete_resume(
 
         db.delete(db_resume)
         db.commit()
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+
+@router.put("/{resume_id}/set-default", response_model=dict)
+async def set_default_resume(
+    resume_id: int,
+    db: Session = Depends(get_db_dependency)
+):
+    """
+    Set a resume as the default resume
+
+    Args:
+        resume_id: Resume ID to set as default
+        db: Database session
+
+    Returns:
+        Success message with resume_id
+
+    Raises:
+        HTTPException 404: If resume not found
+    """
+    try:
+        # Verify resume exists
+        resume = db.query(Resume).filter(Resume.id == resume_id).first()
+        if not resume:
+            raise HTTPException(status_code=404, detail="Resume not found")
+
+        # Update or create user_settings entry
+        setting = db.query(UserSettings).filter(UserSettings.name == "default_resume").first()
+        if setting:
+            setting.value = str(resume_id)
+        else:
+            setting = UserSettings(name="default_resume", value=str(resume_id))
+            db.add(setting)
+
+        db.commit()
+        return {"message": "Default resume updated", "resume_id": resume_id}
     except HTTPException:
         raise
     except Exception as e:

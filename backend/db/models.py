@@ -19,19 +19,19 @@ class Resume(Base):
     __tablename__ = "resumes"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    company_name = Column(String(255), nullable=False, index=True)
-    position_name = Column(String(255), nullable=False, index=True)
+    name = Column(String(255), nullable=False, index=True)
+    user_id = Column(Integer, nullable=True, index=True)  # Will be linked to users table in future
     resume_json = Column(JSON, nullable=False)
     ttl = Column(DateTime(timezone=True), default=calculate_ttl, onupdate=calculate_ttl, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     __table_args__ = (
-        UniqueConstraint('company_name', 'position_name', name='uix_company_position'),
+        UniqueConstraint('name', name='uix_resume_name'),
     )
 
     def __repr__(self):
-        return f"<Resume(id={self.id}, company={self.company_name}, position={self.position_name})>"
+        return f"<Resume(id={self.id}, name={self.name})>"
 
 
 class UserSettings(Base):
