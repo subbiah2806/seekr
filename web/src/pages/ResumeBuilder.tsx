@@ -109,17 +109,32 @@ export function ResumeBuilder() {
   const isInitialLoading = resumesLoading || settingLoading;
 
   /**
-   * Initialize: Auto-load default resume on mount
+   * Initialize: Auto-load resume on mount
+   * Priority: 1) URL query param (?selectedResume=123), 2) Default resume setting
    * Only runs once after resumes and settings are loaded
    */
   useEffect(() => {
     if (!hasInitialized && !isInitialLoading) {
+      // Check for URL query parameter first
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlResumeId = urlParams.get('selectedResume');
+
+      if (urlResumeId) {
+        // Use resume ID from URL
+        const resumeId = parseInt(urlResumeId, 10);
+        if (!isNaN(resumeId)) {
+          setSelectedResume(resumeId);
+          setHasInitialized(true);
+          return;
+        }
+      }
+
+      // Fall back to default resume if no valid URL param
       const defaultResumeId = defaultResumeSetting?.value
         ? parseInt(defaultResumeSetting.value, 10)
         : undefined;
 
       if (defaultResumeId) {
-        // Just set the selected resume ID - useResume will fetch the data
         setSelectedResume(defaultResumeId);
       }
 
@@ -140,15 +155,6 @@ export function ResumeBuilder() {
       });
     }
   }, [selectedResume, selectedResumeData]);
-
-  /**
-   * Auto-save chat messages to localStorage when they change
-   */
-  useEffect(() => {
-    if (selectedResume && pageData.chatMessages.length > 0) {
-      saveChatToLocalStorage(selectedResume, pageData.chatMessages);
-    }
-  }, [selectedResume, pageData.chatMessages]);
 
   /**
    * Calculate if resume has unsaved changes
@@ -193,11 +199,25 @@ export function ResumeBuilder() {
   }, []);
 
   /**
+   * Handle AI response received - save chat to localStorage
+   */
+  const handleAiResponseReceived = useCallback(() => {
+    if (selectedResume) {
+      saveChatToLocalStorage(selectedResume, pageData.chatMessages);
+    }
+  }, [selectedResume, pageData.chatMessages]);
+
+  /**
    * Handle resume selection from list
-   * Sets selectedResume ID - useResume hook will fetch the data
+   * Sets selectedResume ID and updates URL query parameter
    */
   const handleSelectResume = useCallback((resume: Resume) => {
     setSelectedResume(resume.id);
+
+    // Update URL query parameter
+    const url = new URL(window.location.href);
+    url.searchParams.set('selectedResume', resume.id.toString());
+    window.history.pushState({}, '', url.toString());
   }, []);
 
   /**
@@ -210,6 +230,11 @@ export function ResumeBuilder() {
       chatMessages: [],
       resume: resume.resume_json,
     });
+
+    // Remove selectedResume query parameter for new resume
+    const url = new URL(window.location.href);
+    url.searchParams.delete('selectedResume');
+    window.history.pushState({}, '', url.toString());
   }, []);
 
   /**
@@ -222,6 +247,11 @@ export function ResumeBuilder() {
       chatMessages: [],
       resume: null,
     });
+
+    // Remove selectedResume query parameter for new resume
+    const url = new URL(window.location.href);
+    url.searchParams.delete('selectedResume');
+    window.history.pushState({}, '', url.toString());
   }, []);
 
   /**
@@ -295,6 +325,11 @@ export function ResumeBuilder() {
           // Set as selected resume
           setSelectedResume(newResume.id);
 
+          // Update URL query parameter
+          const url = new URL(window.location.href);
+          url.searchParams.set('selectedResume', newResume.id.toString());
+          window.history.pushState({}, '', url.toString());
+
           console.log('Created new resume:', newResume.name);
         } catch (error) {
           console.error('Failed to create resume:', error);
@@ -345,6 +380,11 @@ export function ResumeBuilder() {
             resume: null,
           });
 
+          // Remove selectedResume query parameter
+          const url = new URL(window.location.href);
+          url.searchParams.delete('selectedResume');
+          window.history.pushState({}, '', url.toString());
+
           console.log('Deleted resume:', resume.name);
         } catch (error) {
           console.error('Failed to delete resume:', error);
@@ -386,6 +426,7 @@ export function ResumeBuilder() {
             messages={pageData.chatMessages}
             onMessagesChange={handleMessagesChange}
             onResumeUpdate={handleResumeUpdate}
+            onAiResponseReceived={handleAiResponseReceived}
             initialResume={pageData.resume}
             className="h-full border-none"
             isLoadingResume={selectedResumeLoading}
@@ -442,6 +483,7 @@ export function ResumeBuilder() {
                 messages={pageData.chatMessages}
                 onMessagesChange={handleMessagesChange}
                 onResumeUpdate={handleResumeUpdate}
+                onAiResponseReceived={handleAiResponseReceived}
                 initialResume={pageData.resume}
                 className="h-full border-none"
                 isLoadingResume={selectedResumeLoading}

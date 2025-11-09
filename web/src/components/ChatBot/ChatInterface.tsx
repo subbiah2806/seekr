@@ -24,6 +24,7 @@ interface ChatInterfaceProps {
   messages: ChatMessageType[];  // Controlled messages from parent
   onMessagesChange: (messages: ChatMessageType[]) => void;  // Update parent state
   onResumeUpdate: (resume: ResumeData) => void;
+  onAiResponseReceived?: () => void;  // Callback when AI response is received
   initialFileContent?: string;
   initialResume?: ResumeData | null;
   className?: string;
@@ -39,6 +40,7 @@ export function ChatInterface({
   messages,
   onMessagesChange,
   onResumeUpdate,
+  onAiResponseReceived,
   initialFileContent,
   initialResume,
   className = '',
@@ -79,7 +81,10 @@ export function ChatInterface({
       ]);
       setError(null);
       aiResponseReceived.current = true;
-    }, [messages, onMessagesChange]),
+
+      // Trigger save callback
+      onAiResponseReceived?.();
+    }, [messages, onMessagesChange, onAiResponseReceived]),
     onSuccess: useCallback((message: string, updatedResume: ResumeData) => {
       // Fallback: Add system message if no AI response was provided
       // This maintains backward compatibility with the deprecated 'message' field
@@ -92,9 +97,12 @@ export function ChatInterface({
             resume: updatedResume, // Include updated resume state in assistant message
           },
         ]);
+
+        // Trigger save callback for fallback path too
+        onAiResponseReceived?.();
       }
       setError(null);
-    }, [messages, onMessagesChange]),
+    }, [messages, onMessagesChange, onAiResponseReceived]),
     onError: useCallback((err: Error) => {
       setError(err.message || 'Failed to send message. Please try again.');
       aiResponseReceived.current = false;
