@@ -174,27 +174,18 @@ export function ResumeDropzone({ onFileExtracted, disabled, className }: ResumeD
               handleBrowseClick();
             }
           }}
-          className={`
-            relative flex min-h-[200px] cursor-pointer flex-col items-center justify-center
-            rounded-lg border-2 border-dashed p-8 text-center transition-all
-            ${
-              isDragging
-                ? 'border-primary bg-primary/10'
-                : 'border-border bg-muted hover:border-primary/50'
-            }
-            ${disabled || isProcessing ? 'cursor-not-allowed opacity-60' : ''}
-            ${isSuccess ? 'border-success bg-success/10' : ''}
-            ${isError ? 'border-destructive bg-destructive/10' : ''}
-          `}
+          className={`relative flex min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 text-center transition-all ${
+            isDragging
+              ? 'border-primary bg-primary/10'
+              : 'border-border bg-muted hover:border-primary/50'
+          } ${disabled || isProcessing ? 'cursor-not-allowed opacity-60' : ''} ${isSuccess ? 'border-success bg-success/10' : ''} ${isError ? 'border-destructive bg-destructive/10' : ''} `}
           aria-disabled={disabled || isProcessing}
         >
           {/* Icon and state-based content */}
           {isProcessing && (
             <div className="flex flex-col items-center space-y-3">
               <Loader2 className="h-12 w-12 animate-spin text-primary" />
-              <p className="text-sm font-medium text-foreground">
-                Processing file...
-              </p>
+              <p className="text-sm font-medium text-foreground">Processing file...</p>
             </div>
           )}
 
@@ -202,9 +193,7 @@ export function ResumeDropzone({ onFileExtracted, disabled, className }: ResumeD
             <div className="flex flex-col items-center space-y-3">
               <CheckCircle className="h-12 w-12 text-success" />
               <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">
-                  File uploaded successfully
-                </p>
+                <p className="text-sm font-medium text-foreground">File uploaded successfully</p>
                 <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
                   <FileText className="h-4 w-4" />
                   <span>{fileInfo.name}</span>
@@ -229,12 +218,8 @@ export function ResumeDropzone({ onFileExtracted, disabled, className }: ResumeD
           {isError && (
             <div className="flex flex-col items-center space-y-3">
               <AlertCircle className="h-12 w-12 text-destructive" />
-              <p className="text-sm font-medium text-destructive">
-                Upload failed
-              </p>
-              {error && (
-                <p className="max-w-md text-xs text-destructive">{error}</p>
-              )}
+              <p className="text-sm font-medium text-destructive">Upload failed</p>
+              {error && <p className="max-w-md text-xs text-destructive">{error}</p>}
               <Button
                 variant="outline"
                 size="sm"
@@ -252,11 +237,7 @@ export function ResumeDropzone({ onFileExtracted, disabled, className }: ResumeD
           {!isProcessing && !isSuccess && !isError && (
             <div className="flex flex-col items-center space-y-3">
               <Upload
-                className={`h-12 w-12 ${
-                  isDragging
-                    ? 'text-primary'
-                    : 'text-muted-foreground'
-                }`}
+                className={`h-12 w-12 ${isDragging ? 'text-primary' : 'text-muted-foreground'}`}
               />
               <div className="space-y-1">
                 <p className="text-sm font-medium text-foreground">

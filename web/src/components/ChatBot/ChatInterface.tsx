@@ -21,11 +21,11 @@ interface AttachedFile {
 }
 
 interface ChatInterfaceProps {
-  messages: ChatMessageType[];  // Controlled messages from parent
-  onMessagesChange: (messages: ChatMessageType[]) => void;  // Update parent state
+  messages: ChatMessageType[]; // Controlled messages from parent
+  onMessagesChange: (messages: ChatMessageType[]) => void; // Update parent state
   onResumeUpdate: (resume: ResumeData) => void;
-  onAiResponseReceived?: () => void;  // Callback when AI response is received
-  headerLeftElement?: React.ReactNode;  // Optional element to show on left side of header (mobile menu button)
+  onAiResponseReceived?: () => void; // Callback when AI response is received
+  headerLeftElement?: React.ReactNode; // Optional element to show on left side of header (mobile menu button)
   initialFileContent?: string;
   initialResume?: ResumeData | null;
   className?: string;
@@ -50,61 +50,73 @@ export function ChatInterface({
 }: ChatInterfaceProps) {
   const [error, setError] = useState<string | null>(null);
   const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
-  const [currentResume, setCurrentResume] = useState<ResumeData | null>(initialResume || null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasProcessedInitialFile = useRef(false);
   const aiResponseReceived = useRef(false);
 
-  const { sendMessage, isLoading, error: apiError, reset } = useChat({
-    onResumeUpdate: useCallback((resume: ResumeData) => {
-      setCurrentResume(resume); // Update local resume state
-      onResumeUpdate(resume);
-      // Reset AI response flag before callbacks
-      aiResponseReceived.current = false;
-    }, [onResumeUpdate]),
-    onAiResponse: useCallback((response: string, updatedResume: ResumeData) => {
-      console.log('[ChatInterface] Received AI response:', {
-        response: response.substring(0, 50) + '...',
-        hasResume: !!updatedResume,
-        resumeKeys: updatedResume ? Object.keys(updatedResume) : [],
-        firstName: updatedResume?.firstName,
-        experienceCount: updatedResume?.experience?.length,
-      });
+  const {
+    sendMessage,
+    isLoading,
+    error: apiError,
+    reset,
+  } = useChat({
+    onResumeUpdate: useCallback(
+      (resume: ResumeData) => {
+        onResumeUpdate(resume);
+        // Reset AI response flag before callbacks
+        aiResponseReceived.current = false;
+      },
+      [onResumeUpdate]
+    ),
+    onAiResponse: useCallback(
+      (response: string, updatedResume: ResumeData) => {
+        console.log('[ChatInterface] Received AI response:', {
+          response: response.substring(0, 50) + '...',
+          hasResume: !!updatedResume,
+          resumeKeys: updatedResume ? Object.keys(updatedResume) : [],
+          firstName: updatedResume?.firstName,
+          experienceCount: updatedResume?.experience?.length,
+        });
 
-      // Add AI response (suggestions/questions) to messages when present
-      // Use the updated resume from the callback, not the stale state
-      onMessagesChange([
-        ...messages,
-        {
-          role: 'assistant',
-          content: response,
-          resume: updatedResume, // Include updated resume state in assistant message
-        },
-      ]);
-      setError(null);
-      aiResponseReceived.current = true;
-
-      // Trigger save callback
-      onAiResponseReceived?.();
-    }, [messages, onMessagesChange, onAiResponseReceived]),
-    onSuccess: useCallback((message: string, updatedResume: ResumeData) => {
-      // Fallback: Add system message if no AI response was provided
-      // This maintains backward compatibility with the deprecated 'message' field
-      if (!aiResponseReceived.current && message) {
+        // Add AI response (suggestions/questions) to messages when present
+        // Use the updated resume from the callback, not the stale state
         onMessagesChange([
           ...messages,
           {
             role: 'assistant',
-            content: message,
+            content: response,
             resume: updatedResume, // Include updated resume state in assistant message
           },
         ]);
+        setError(null);
+        aiResponseReceived.current = true;
 
-        // Trigger save callback for fallback path too
+        // Trigger save callback
         onAiResponseReceived?.();
-      }
-      setError(null);
-    }, [messages, onMessagesChange, onAiResponseReceived]),
+      },
+      [messages, onMessagesChange, onAiResponseReceived]
+    ),
+    onSuccess: useCallback(
+      (message: string, updatedResume: ResumeData) => {
+        // Fallback: Add system message if no AI response was provided
+        // This maintains backward compatibility with the deprecated 'message' field
+        if (!aiResponseReceived.current && message) {
+          onMessagesChange([
+            ...messages,
+            {
+              role: 'assistant',
+              content: message,
+              resume: updatedResume, // Include updated resume state in assistant message
+            },
+          ]);
+
+          // Trigger save callback for fallback path too
+          onAiResponseReceived?.();
+        }
+        setError(null);
+      },
+      [messages, onMessagesChange, onAiResponseReceived]
+    ),
     onError: useCallback((err: Error) => {
       setError(err.message || 'Failed to send message. Please try again.');
       aiResponseReceived.current = false;
@@ -126,16 +138,6 @@ export function ChatInterface({
   }, [messages, scrollToBottom]);
 
   /**
-   * Update currentResume when initialResume changes
-   * (handles async loading of saved resume from usersettings)
-   */
-  useEffect(() => {
-    if (initialResume) {
-      setCurrentResume(initialResume);
-    }
-  }, [initialResume]);
-
-  /**
    * Process initial file content if provided
    */
   useEffect(() => {
@@ -144,12 +146,12 @@ export function ChatInterface({
       const initialMessage: ChatMessageType = {
         role: 'user',
         content: 'I uploaded a file. Please analyze it and help me with my resume.',
-        resume: currentResume, // Include resume state in message
+        resume: initialResume, // Include resume state in message
       };
       onMessagesChange([initialMessage]);
       sendMessage([initialMessage], initialFileContent);
     }
-  }, [initialFileContent, currentResume, sendMessage, onMessagesChange]);
+  }, [initialFileContent, initialResume, sendMessage, onMessagesChange]);
 
   /**
    * Handle file drop using react-dropzone
@@ -228,7 +230,7 @@ export function ChatInterface({
       const userMessage: ChatMessageType = {
         role: 'user',
         content: messageContent,
-        resume: currentResume, // Include resume state in message
+        resume: initialResume, // Include resume state in message
       };
 
       console.log('[ChatInterface] Sending user message:', {
@@ -250,7 +252,7 @@ export function ChatInterface({
       // Clear attached file after sending
       setAttachedFile(null);
     },
-    [messages, isLoading, attachedFile, currentResume, sendMessage, onMessagesChange]
+    [messages, isLoading, attachedFile, initialResume, sendMessage, onMessagesChange]
   );
 
   /**
@@ -295,7 +297,7 @@ export function ChatInterface({
   return (
     <Card
       {...getRootProps()}
-      className={`flex h-full flex-col bg-card relative ${className}`}
+      className={`relative flex h-full flex-col bg-card ${className}`}
       role="region"
       aria-label="Chat interface"
     >
@@ -312,11 +314,9 @@ export function ChatInterface({
         </div>
       )}
       {/* Header */}
-      <div className="flex flex-row items-center justify-between border-b border-border px-6 py-4 min-h-[65px]">
+      <div className="flex min-h-[65px] flex-row items-center justify-between border-b border-border px-6 py-4">
         <div className="flex items-center gap-2">
-          {headerLeftElement && (
-            <div className="lg:hidden">{headerLeftElement}</div>
-          )}
+          {headerLeftElement && <div className="lg:hidden">{headerLeftElement}</div>}
           <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground">
             <MessageSquare className="h-5 w-5 text-primary" aria-hidden="true" />
             {DEFAULT_TITLE}
@@ -329,7 +329,7 @@ export function ChatInterface({
             variant="ghost"
             size="sm"
             onClick={handleClearChat}
-            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+            className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
             aria-label="Clear all chat messages"
           >
             <Trash2 className="h-4 w-4" aria-hidden="true" />
@@ -342,162 +342,182 @@ export function ChatInterface({
         <DataFetchWrapper
           isLoading={isLoadingResume}
           loadingMessage="Loading..."
-          className="flex-1 flex flex-col"
+          className="flex flex-1 flex-col"
         >
           <>
             {/* Messages Container */}
             <div
-              className={`flex-1 space-y-4 ${hasMessages ? 'px-6 pt-6 pb-6' : ''}`}
+              className={`flex-1 space-y-4 ${hasMessages ? 'px-6 pb-6 pt-6' : ''}`}
               role="log"
               aria-live="polite"
               aria-atomic="false"
               aria-relevant="additions"
             >
-          {/* Empty State / Welcome Message */}
-          {!hasMessages && (
-            <div className="flex h-full flex-col items-center justify-center gap-3 py-6 px-4">
-              <div className="space-y-2 max-w-3xl w-full">
-                <h3 className="flex items-center justify-center gap-2 text-lg font-semibold text-foreground">
-                  <MessageSquare className="h-5 w-5 text-primary" aria-hidden="true" />
-                  {currentResume ? 'Polish Your Resume' : 'Build Your Resume'}
-                </h3>
+              {/* Empty State / Welcome Message */}
+              {!hasMessages && (
+                <div className="flex flex-col items-center justify-center gap-3 px-4 py-6">
+                  <div className="w-full max-w-3xl space-y-2">
+                    <h3 className="flex items-center justify-center gap-2 text-lg font-semibold text-foreground">
+                      <MessageSquare className="h-5 w-5 text-primary" aria-hidden="true" />
+                      {initialResume ? 'Polish Your Resume' : 'Build Your Resume'}
+                    </h3>
 
-                {currentResume ? (
-                  /* Resume exists - show improvement message */
-                  <div className="text-center space-y-3">
-                    <p className="text-sm text-foreground">
-                      Your resume is ready! Let's make it shine ✨
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Ask me to refine any section, tailor it for specific roles, optimize for ATS, or explore new ways to showcase your experience
-                    </p>
+                    {initialResume ? (
+                      /* Resume exists - show improvement message */
+                      <div className="space-y-3 text-center">
+                        <p className="text-sm text-foreground">
+                          {`Your resume is ready! Let's make it shine ✨`}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Ask me to refine any section, tailor it for specific roles, optimize for
+                          ATS, or explore new ways to showcase your experience
+                        </p>
+                      </div>
+                    ) : (
+                      /* No resume - show creation guide */
+                      <>
+                        <p className="text-center text-sm text-muted-foreground">
+                          Provide the following information to create your professional resume or
+                          you can upload a resume file instead we can parse these things from your
+                          existing resume
+                        </p>
+
+                        {/* Information Required List - Compact Layout */}
+                        <div className="space-y-2 text-left text-sm">
+                          <div>
+                            <h4 className="mb-0.5 text-sm font-semibold text-foreground">
+                              Personal Information
+                            </h4>
+                            <p className="text-muted-foreground">
+                              First & last name • Email & mobile • Location • LinkedIn • GitHub •
+                              Visa status • Remote preference
+                            </p>
+                          </div>
+
+                          <div>
+                            <h4 className="mb-0.5 text-sm font-semibold text-foreground">
+                              Professional Summary
+                            </h4>
+                            <p className="text-muted-foreground">
+                              Brief professional summary highlighting your expertise
+                            </p>
+                          </div>
+
+                          <div>
+                            <h4 className="mb-0.5 text-sm font-semibold text-foreground">Skills</h4>
+                            <p className="text-muted-foreground">
+                              List of skills organized by category (Frontend, Backend, DevOps, etc.)
+                            </p>
+                          </div>
+
+                          <div>
+                            <h4 className="mb-0.5 text-sm font-semibold text-foreground">
+                              Professional Experience
+                            </h4>
+                            <p className="text-muted-foreground">
+                              Company name & location • Position/role • Employment dates •
+                              Achievements & responsibilities • Project descriptions
+                            </p>
+                          </div>
+
+                          <div>
+                            <h4 className="mb-0.5 text-sm font-semibold text-foreground">
+                              Education
+                            </h4>
+                            <p className="text-muted-foreground">
+                              College/University name & location • Major/Degree • Dates attended
+                            </p>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
-                ) : (
-                  /* No resume - show creation guide */
-                  <>
-                    <p className="text-sm text-muted-foreground text-center">
-                      Provide the following information to create your professional resume or you can upload a resume file instead we can parse these things from your existing resume
-                    </p>
 
-                    {/* Information Required List - Compact Layout */}
-                    <div className="space-y-2 text-left text-sm">
-                      <div>
-                        <h4 className="font-semibold text-foreground mb-0.5 text-sm">Personal Information</h4>
-                        <p className="text-muted-foreground">
-                          First & last name • Email & mobile • Location • LinkedIn • GitHub • Visa status • Remote preference
-                        </p>
-                      </div>
-
-                      <div>
-                        <h4 className="font-semibold text-foreground mb-0.5 text-sm">Professional Summary</h4>
-                        <p className="text-muted-foreground">
-                          Brief professional summary highlighting your expertise
-                        </p>
-                      </div>
-
-                      <div>
-                        <h4 className="font-semibold text-foreground mb-0.5 text-sm">Skills</h4>
-                        <p className="text-muted-foreground">
-                          List of skills organized by category (Frontend, Backend, DevOps, etc.)
-                        </p>
-                      </div>
-
-                      <div>
-                        <h4 className="font-semibold text-foreground mb-0.5 text-sm">Professional Experience</h4>
-                        <p className="text-muted-foreground">
-                          Company name & location • Position/role • Employment dates • Achievements & responsibilities • Project descriptions
-                        </p>
-                      </div>
-
-                      <div>
-                        <h4 className="font-semibold text-foreground mb-0.5 text-sm">Education</h4>
-                        <p className="text-muted-foreground">
-                          College/University name & location • Major/Degree • Dates attended
-                        </p>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* Suggested Prompts - Only show if resume exists */}
-              {currentResume && (
-                <div className="flex flex-wrap justify-center gap-2" role="group" aria-label="Suggested prompts">
-                  {[
-                    'Help me create a resume for a software engineer role',
-                    'Optimize my resume for ATS systems',
-                    'What skills should I highlight?',
-                  ].map((prompt, index) => (
-                    <Button
-                      key={index}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleSuggestedPrompt(prompt)}
-                      className="text-xs"
-                      aria-label={`Send prompt: ${prompt}`}
+                  {/* Suggested Prompts - Only show if resume exists */}
+                  {initialResume && (
+                    <div
+                      className="flex flex-wrap justify-center gap-2"
+                      role="group"
+                      aria-label="Suggested prompts"
                     >
-                      {prompt}
-                    </Button>
-                  ))}
+                      {[
+                        'Help me create a resume for a software engineer role',
+                        'Optimize my resume for ATS systems',
+                        'What skills should I highlight?',
+                      ].map((prompt, index) => (
+                        <Button
+                          key={index}
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleSuggestedPrompt(prompt)}
+                          className="text-xs"
+                          aria-label={`Send prompt: ${prompt}`}
+                        >
+                          {prompt}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
-          )}
 
-          {/* Messages List */}
-          {hasMessages &&
-            messages.map((message, index) => (
-              <ChatMessage key={`${message.role}-${index}`} message={message} />
-            ))}
+              {/* Messages List */}
+              {hasMessages &&
+                messages.map((message, index) => (
+                  <ChatMessage key={`${message.role}-${index}`} message={message} />
+                ))}
 
-          {/* Loading Indicator */}
-          {isLoading && (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-              <span className="text-sm">AI is thinking...</span>
-            </div>
-          )}
+              {/* Loading Indicator */}
+              {isLoading && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                  <span className="text-sm">AI is thinking...</span>
+                </div>
+              )}
 
-          {/* Error Display */}
-          {(error || apiError) && (
-            <div
-              className="flex items-start gap-2 rounded-lg border border-destructive bg-destructive/10 p-3"
-              role="alert"
-              aria-live="assertive"
-            >
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
-              <div className="flex-1 space-y-1">
-                <p className="text-sm font-medium text-destructive">Error</p>
-                <p className="text-xs text-destructive/90">
-                  {error || apiError?.message || 'An error occurred'}
-                </p>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearError}
-                  className="h-auto p-0 text-xs text-destructive hover:text-destructive/90"
-                  aria-label="Dismiss error message"
+              {/* Error Display */}
+              {(error || apiError) && (
+                <div
+                  className="flex items-start gap-2 rounded-lg border border-destructive bg-destructive/10 p-3"
+                  role="alert"
+                  aria-live="assertive"
                 >
-                  Dismiss
-                </Button>
-              </div>
+                  <AlertCircle
+                    className="mt-0.5 h-4 w-4 shrink-0 text-destructive"
+                    aria-hidden="true"
+                  />
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm font-medium text-destructive">Error</p>
+                    <p className="text-xs text-destructive/90">
+                      {error || apiError?.message || 'An error occurred'}
+                    </p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearError}
+                      className="h-auto p-0 text-xs text-destructive hover:text-destructive/90"
+                      aria-label="Dismiss error message"
+                    >
+                      Dismiss
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Scroll Anchor */}
+              <div ref={messagesEndRef} />
             </div>
-          )}
 
-          {/* Scroll Anchor */}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* Input Area */}
-        <div className="sticky bottom-0 bg-card px-6 pb-6">
-          <ChatInput
-            onSendMessage={handleSendMessage}
-            isLoading={isLoading}
-            attachedFile={attachedFile}
-            onFileRemove={handleFileRemove}
-          />
-        </div>
-      </>
+            {/* Input Area */}
+            <div className="sticky bottom-0 bg-card px-6 pb-6">
+              <ChatInput
+                onSendMessage={handleSendMessage}
+                isLoading={isLoading}
+                attachedFile={attachedFile}
+                onFileRemove={handleFileRemove}
+              />
+            </div>
+          </>
         </DataFetchWrapper>
       </div>
     </Card>
