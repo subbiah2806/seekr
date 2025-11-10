@@ -461,6 +461,7 @@ export function ResumeBuilder() {
             onSaveAs={handleSaveClick}
             currentResumeId={selectedResume}
             hasUnsavedChanges={isEdited}
+            onResumeChange={handleResumeUpdate}
           />
         </div>
       </div>
@@ -536,6 +537,7 @@ export function ResumeBuilder() {
                 onSaveAs={handleSaveClick}
                 currentResumeId={selectedResume}
                 hasUnsavedChanges={isEdited}
+                onResumeChange={handleResumeUpdate}
               />
             </div>
           </Panel>

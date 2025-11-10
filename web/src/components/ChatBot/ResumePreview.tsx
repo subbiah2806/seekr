@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { FileText, Copy, Check, Eye, Code as CodeIcon, Save, Trash2, Download } from 'lucide-react';
 import { Card } from '@subbiah/reusable/components/ui/card';
 import { Button } from '@subbiah/reusable/components/ui/button';
@@ -33,6 +33,7 @@ interface ResumePreviewProps {
   onSaveAs?: () => void;  // Callback to trigger "Save As" modal
   currentResumeId?: number;  // Current resume ID (undefined if new)
   hasUnsavedChanges?: boolean;  // Whether there are unsaved changes
+  onResumeChange?: (resume: ResumeData) => void;  // Callback to update resume data
 }
 
 function ResumePreviewComponent({
@@ -45,6 +46,7 @@ function ResumePreviewComponent({
   onSaveAs,
   currentResumeId,
   hasUnsavedChanges = false,
+  onResumeChange,
 }: ResumePreviewProps) {
   const [internalViewMode, setInternalViewMode] = useState<'formatted' | 'json'>('formatted');
   const [copied, setCopied] = useState(false);
@@ -307,7 +309,7 @@ function ResumePreviewComponent({
               {resume && (viewMode === 'formatted' ? (
                 <FormattedView resume={resume} />
               ) : (
-                <JsonView resume={resume} />
+                <JsonView resume={resume} onResumeChange={onResumeChange} />
               ))}
             </div>
           </DataFetchWrapper>
@@ -325,13 +327,58 @@ const FormattedView = memo(({ resume }: { resume: ResumeData }) => (
 ));
 FormattedView.displayName = 'FormattedView';
 
-const JsonView = memo(({ resume }: { resume: ResumeData }) => (
-  <div className="rounded-md border border-border bg-muted p-4">
-    <pre className="text-xs text-foreground whitespace-pre-wrap break-words">
-      <code>{JSON.stringify(resume, null, 2)}</code>
-    </pre>
-  </div>
-));
+const JsonView = memo(({
+  resume,
+  onResumeChange
+}: {
+  resume: ResumeData;
+  onResumeChange?: (resume: ResumeData) => void;
+}) => {
+  const [jsonText, setJsonText] = useState(() => JSON.stringify(resume, null, 2));
+  const [error, setError] = useState<string | null>(null);
+
+  // Update jsonText when resume prop changes externally
+  useEffect(() => {
+    setJsonText(JSON.stringify(resume, null, 2));
+  }, [resume]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newText = e.target.value;
+    setJsonText(newText);
+
+    // Try to parse and validate JSON
+    try {
+      const parsed = JSON.parse(newText);
+      setError(null);
+
+      // Update parent state if callback is provided
+      if (onResumeChange) {
+        onResumeChange(parsed as ResumeData);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Invalid JSON');
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-full space-y-2">
+      {error && (
+        <div className="rounded-md border border-destructive bg-destructive/10 px-4 py-2 text-sm text-destructive">
+          {error}
+        </div>
+      )}
+      <div className="flex-1 rounded-md border border-border bg-muted">
+        <textarea
+          value={jsonText}
+          onChange={handleChange}
+          className="w-full h-full resize-none bg-transparent p-4 text-xs font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-md"
+          spellCheck={false}
+          placeholder="Enter resume JSON..."
+        />
+      </div>
+    </div>
+  );
+});
 JsonView.displayName = 'JsonView';
 
 export const ResumePreview = memo(ResumePreviewComponent);
