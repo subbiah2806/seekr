@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start": "npx kill-port 5173 && vite --port 5173",
+    "start": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "type-check": "tsc --noEmit"

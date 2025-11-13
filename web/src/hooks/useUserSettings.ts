@@ -43,7 +43,7 @@ async function saveSetting(request: SaveSettingRequest): Promise<UserSetting> {
 
       return updateResponse.json();
     }
-  } catch (error) {
+  } catch {
     // Setting doesn't exist, create it
   }
 
@@ -55,7 +55,9 @@ async function saveSetting(request: SaveSettingRequest): Promise<UserSetting> {
   });
 
   if (!createResponse.ok) {
-    const errorData = await createResponse.json().catch(() => ({ detail: 'Failed to save setting' }));
+    const errorData = await createResponse
+      .json()
+      .catch(() => ({ detail: 'Failed to save setting' }));
     throw new Error(errorData.detail || 'Failed to save setting');
   }
 
