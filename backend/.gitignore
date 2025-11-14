@@ -25,3 +25,4 @@ seekr.db
 
 # OS
 .DS_Store
+venv
