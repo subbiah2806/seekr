@@ -117,17 +117,6 @@ export BACKEND_HOST
 export BACKEND_PORT
 echo -e "${BLUE}--------${NC}\n"
 
-# Step 4: Check if Python dependencies are installed
-echo -e "${BLUE}Step 4/5: Checking Python dependencies...${NC}"
-if ! python3 -c "import fastapi" 2>/dev/null; then
-    echo -e "${YELLOW}⚠️  Installing dependencies...${NC}"
-    pip3 install -r requirements.txt
-    echo -e "${GREEN}Dependencies installed${NC}"
-else
-    echo -e "${GREEN}Dependencies already installed${NC}"
-fi
-echo -e "${BLUE}--------${NC}\n"
-
 # Start the server
 echo -e "\n${GREEN}🎯 Starting FastAPI server on http://localhost:${BACKEND_PORT}${NC}"
 echo -e "${GREEN}📚 API Docs: http://localhost:${BACKEND_PORT}/docs${NC}\n"
