@@ -1,11 +1,8 @@
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import electron from 'vite-plugin-electron';
 
-export default defineConfig(({ mode }) => {
-  // Load env file from parent directory
-  const env = loadEnv(mode, '../', '');
-
+export default defineConfig(() => {
   return {
     plugins: [
       react(),
@@ -18,9 +15,6 @@ export default defineConfig(({ mode }) => {
     },
     optimizeDeps: {
       include: ['react', 'react-dom'],
-    },
-    server: {
-      port: parseInt(env.VITE_DESKTOP_PORT) || 4102,
     },
     envDir: '../', // Load .env from parent directory
   };

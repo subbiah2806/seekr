@@ -4,8 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-
-const API_BASE_URL = 'http://localhost:4200';
+import { API_BASE_URL } from '../config/api';
 
 interface UserSetting {
   id: number;

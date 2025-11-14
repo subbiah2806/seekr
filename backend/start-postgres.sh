@@ -2,7 +2,7 @@
 
 # Seekr Backend Startup Script with PostgreSQL
 # Usage: ./start-postgres.sh
-# Configuration is read from ../. env file
+# Configuration is passed via environment variables from Makefile
 
 set -e  # Exit on error
 
@@ -17,42 +17,34 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$SCRIPT_DIR"
 
-# Set parent .env path
-PARENT_ENV="../.env"
-
-# Verify .env exists (it should be committed to repo)
-if [ ! -f "$PARENT_ENV" ]; then
-    echo -e "${RED}❌ Error: Shared .env file not found at $PARENT_ENV${NC}"
-    echo -e "${RED}   The .env file should be committed to the repository.${NC}"
-    exit 1
-fi
-
-# Load environment variables from .env
-export $(grep -v '^#' "$PARENT_ENV" | xargs)
-
 # Validate required environment variables
 if [ -z "$BACKEND_PORT" ]; then
-    echo -e "${RED}❌ Error: BACKEND_PORT not found in .env${NC}"
+    echo -e "${RED}❌ Error: BACKEND_PORT environment variable not set${NC}"
+    echo -e "${RED}   This should be passed from Makefile${NC}"
     exit 1
 fi
 
 if [ -z "$DATABASE_PORT" ]; then
-    echo -e "${RED}❌ Error: DATABASE_PORT not found in .env${NC}"
+    echo -e "${RED}❌ Error: DATABASE_PORT environment variable not set${NC}"
+    echo -e "${RED}   This should be passed from Makefile${NC}"
     exit 1
 fi
 
 if [ -z "$BACKEND_HOST" ]; then
-    echo -e "${RED}❌ Error: BACKEND_HOST not found in .env${NC}"
+    echo -e "${RED}❌ Error: BACKEND_HOST environment variable not set${NC}"
+    echo -e "${RED}   This should be passed from Makefile${NC}"
     exit 1
 fi
 
 if [ -z "$DATABASE_NAME" ]; then
-    echo -e "${RED}❌ Error: DATABASE_NAME not found in .env${NC}"
+    echo -e "${RED}❌ Error: DATABASE_NAME environment variable not set${NC}"
+    echo -e "${RED}   This should be passed from Makefile${NC}"
     exit 1
 fi
 
 if [ -z "$DATABASE_URL" ]; then
-    echo -e "${RED}❌ Error: DATABASE_URL not found in .env${NC}"
+    echo -e "${RED}❌ Error: DATABASE_URL environment variable not set${NC}"
+    echo -e "${RED}   This should be passed from Makefile${NC}"
     exit 1
 fi
 

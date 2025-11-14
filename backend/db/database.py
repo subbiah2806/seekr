@@ -7,14 +7,19 @@ from sqlalchemy.pool import StaticPool
 from contextlib import contextmanager
 from typing import Generator
 import os
+import sys
 from dotenv import load_dotenv
 
 from db.models import Base
 
 load_dotenv()
 
-# Get database URL from environment
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg://localhost:5432/seekr")
+# Get database URL from environment - REQUIRED, no default
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    print("❌ Error: DATABASE_URL environment variable is not set", file=sys.stderr)
+    print("   Make sure DATABASE_URL is passed from the Makefile", file=sys.stderr)
+    sys.exit(1)
 
 # Create engine
 # For SQLite (testing): use StaticPool and check_same_thread=False

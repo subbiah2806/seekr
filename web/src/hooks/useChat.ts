@@ -5,8 +5,7 @@
 
 import { useMutation } from '@tanstack/react-query';
 import type { ChatRequest, ChatResponse, ChatMessage, ResumeData } from '../types/chat';
-
-const API_BASE_URL = 'http://localhost:4200';
+import { API_BASE_URL } from '../config/api';
 
 /**
  * Send chat message to backend API
