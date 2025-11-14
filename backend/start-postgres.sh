@@ -76,8 +76,12 @@ if ! pg_isready -q; then
     elif command -v systemctl &> /dev/null; then
         # Linux with systemd
         sudo systemctl start postgresql 2>/dev/null || true
+    elif command -v service &> /dev/null; then
+        # Linux containers without systemd (DevContainer/Docker)
+        echo -e "${BLUE}Using 'service' command to start PostgreSQL...${NC}"
+        sudo service postgresql start 2>/dev/null || true
     elif command -v pg_ctl &> /dev/null; then
-        # Direct pg_ctl start (DevContainer/Ubuntu)
+        # Direct pg_ctl start (fallback)
         PGDATA="${PGDATA:-/var/lib/postgresql/data}"
         if [ ! -d "$PGDATA" ]; then
             # Initialize database if not exists
@@ -103,9 +107,18 @@ echo -e "${BLUE}--------${NC}\n"
 
 # Step 3: Create database if it doesn't exist
 echo -e "${BLUE}Step 3/5: Checking ${DATABASE_NAME} database...${NC}"
-if ! psql -lqt | cut -d \| -f 1 | grep -qw $DATABASE_NAME; then
+
+# Check if current user exists in PostgreSQL, if not create it or use postgres user
+CURRENT_USER=$(whoami)
+if ! sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='$CURRENT_USER'" | grep -q 1; then
+    echo -e "${YELLOW}⚠️  Creating PostgreSQL user '$CURRENT_USER'...${NC}"
+    sudo -u postgres createuser -s "$CURRENT_USER" 2>/dev/null || true
+fi
+
+# Check and create database
+if ! sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw $DATABASE_NAME; then
     echo -e "${YELLOW}⚠️  Creating database '$DATABASE_NAME'...${NC}"
-    createdb $DATABASE_NAME
+    sudo -u postgres createdb $DATABASE_NAME
     echo -e "${GREEN}${DATABASE_NAME} created: ${DATABASE_URL}${NC}"
 else
     echo -e "${GREEN}${DATABASE_NAME} already exists: ${DATABASE_URL}${NC}"
