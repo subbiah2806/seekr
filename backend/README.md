@@ -4,12 +4,14 @@ Simple Resume Management API built with Python, FastAPI, and PostgreSQL.
 
 ## Port Allocation
 
-- **Backend API**: `4200`
-- **Database**: `4201`
-- **Web Frontend**: `4100`
-- **Extension**: `4101`
+- **Seekr Web**: `4001`
+- **Seekr Extension**: `4002`
+- **Seekr Desktop**: `4003`
+- **Seekr Mobile**: `4004`
+- **Backend API**: `5000`
+- **PostgreSQL Database**: `5432`
 
-_Port ranges: 4100-4199 for frontend, 4200-4299 for backend/database_
+_All ports are configured in the Makefile at the repository root_
 
 ## Quick Start (One Command!)
 
@@ -26,7 +28,7 @@ That's it! The script will:
 - ✅ Check and install dependencies if needed
 - ✅ Use SQLite (no database server needed!)
 - ✅ Create tables automatically
-- ✅ Start the server at http://localhost:4200
+- ✅ Start the server at http://localhost:5000
 
 ## Alternative: PostgreSQL Setup
 
@@ -62,7 +64,7 @@ pip3 install -r requirements.txt
 python3 main.py
 ```
 
-The server will start at `http://localhost:4200`
+The server will start at `http://localhost:5000`
 
 ## Database Options
 
@@ -180,5 +182,5 @@ Response: 204 No Content
 
 Once the server is running, visit:
 
-- **Swagger UI**: http://localhost:4200/docs
-- **ReDoc**: http://localhost:4200/redoc
+- **Swagger UI**: http://localhost:5000/docs
+- **ReDoc**: http://localhost:5000/redoc

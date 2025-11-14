@@ -128,24 +128,6 @@ else
 fi
 echo -e "${BLUE}--------${NC}\n"
 
-# Step 5: Kill any process using the backend port
-echo -e "${BLUE}Step 5/5: Checking port ${BACKEND_PORT}...${NC}"
-if lsof -ti:$BACKEND_PORT > /dev/null 2>&1; then
-    echo -e "${YELLOW}⚠️  Killing process on port ${BACKEND_PORT}...${NC}"
-    lsof -ti:$BACKEND_PORT | xargs kill -9 2>/dev/null || true
-    sleep 1
-    echo -e "${GREEN}Port ${BACKEND_PORT} is now free${NC}"
-else
-    echo -e "${GREEN}Port ${BACKEND_PORT} is already free${NC}"
-fi
-echo -e "${BLUE}--------${NC}\n"
-
-# Optional: Open database in TablePlus (macOS only)
-if command -v open &> /dev/null && [ -f "./open-db.sh" ]; then
-    echo -e "${BLUE}Opening database in TablePlus (macOS)...${NC}"
-    ./open-db.sh "${DATABASE_URL}" 2>/dev/null || echo -e "${YELLOW}⚠️  TablePlus not available (skipping)${NC}"
-fi
-
 # Start the server
 echo -e "\n${GREEN}🎯 Starting FastAPI server on http://localhost:${BACKEND_PORT}${NC}"
 echo -e "${GREEN}📚 API Docs: http://localhost:${BACKEND_PORT}/docs${NC}\n"
