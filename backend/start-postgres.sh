@@ -107,18 +107,9 @@ echo -e "${BLUE}--------${NC}\n"
 
 # Step 3: Create database if it doesn't exist
 echo -e "${BLUE}Step 3/5: Checking ${DATABASE_NAME} database...${NC}"
-
-# Check if current user exists in PostgreSQL, if not create it or use postgres user
-CURRENT_USER=$(whoami)
-if ! sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='$CURRENT_USER'" | grep -q 1; then
-    echo -e "${YELLOW}⚠️  Creating PostgreSQL user '$CURRENT_USER'...${NC}"
-    sudo -u postgres createuser -s "$CURRENT_USER" 2>/dev/null || true
-fi
-
-# Check and create database
-if ! sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw $DATABASE_NAME; then
+if ! psql -lqt | cut -d \| -f 1 | grep -qw $DATABASE_NAME; then
     echo -e "${YELLOW}⚠️  Creating database '$DATABASE_NAME'...${NC}"
-    sudo -u postgres createdb $DATABASE_NAME
+    createdb $DATABASE_NAME
     echo -e "${GREEN}${DATABASE_NAME} created: ${DATABASE_URL}${NC}"
 else
     echo -e "${GREEN}${DATABASE_NAME} already exists: ${DATABASE_URL}${NC}"
@@ -134,7 +125,7 @@ echo -e "${BLUE}--------${NC}\n"
 echo -e "${BLUE}Step 4/5: Setting up Python environment...${NC}"
 if [ ! -d "venv" ]; then
     echo -e "${YELLOW}⚠️  Creating virtual environment...${NC}"
-    python3 -m venv venv
+    python3.12 -m venv venv
 fi
 
 # Activate virtual environment
