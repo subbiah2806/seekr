@@ -117,8 +117,29 @@ export BACKEND_HOST
 export BACKEND_PORT
 echo -e "${BLUE}--------${NC}\n"
 
+# Step 4: Activate virtual environment and install dependencies
+echo -e "${BLUE}Step 4/5: Setting up Python environment...${NC}"
+if [ ! -d "venv" ]; then
+    echo -e "${YELLOW}⚠️  Creating virtual environment...${NC}"
+    python3 -m venv venv
+fi
+
+# Activate virtual environment
+source venv/bin/activate
+
+# Install dependencies if needed
+if ! python -c "import fastapi" 2>/dev/null; then
+    echo -e "${YELLOW}⚠️  Installing Python dependencies...${NC}"
+    pip install -r requirements.txt
+    echo -e "${GREEN}Dependencies installed${NC}"
+else
+    echo -e "${GREEN}Dependencies already installed${NC}"
+fi
+echo -e "${BLUE}--------${NC}\n"
+
 # Start the server
-echo -e "\n${GREEN}🎯 Starting FastAPI server on http://localhost:${BACKEND_PORT}${NC}"
+echo -e "${BLUE}Step 5/5: Starting FastAPI server...${NC}"
+echo -e "${GREEN}🎯 Server: http://localhost:${BACKEND_PORT}${NC}"
 echo -e "${GREEN}📚 API Docs: http://localhost:${BACKEND_PORT}/docs${NC}\n"
 
-python3 main.py
+python main.py
